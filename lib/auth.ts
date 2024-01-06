@@ -23,6 +23,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           response_type: "code",
         },
       },
+      profile(profile) {
+        return {
+          id: profile.id,
+          name: `${profile.firstname} ${profile.lastname}`,
+          email: null,
+          image: profile.profile,
+        };
+      },
     }),
   ],
   callbacks: {

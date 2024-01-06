@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import CalendarHeatmap from "react-calendar-heatmap";
-import "react-calendar-heatmap/dist/styles.css";
 
 interface StravaActivity {
   start_date: string;
@@ -14,8 +14,14 @@ interface ActivityData {
   count: number;
 }
 
-export default function Page({ activities }: { activities: StravaActivity[] }) {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+export default function HeatMap({
+  activities,
+}: {
+  activities: StravaActivity[];
+}) {
+  const searchParams = useSearchParams();
+  const year = Number(searchParams.get("year")) || new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(year);
   const [activityData, setActivityData] = useState<ActivityData[]>([]);
 
   useEffect(() => {
@@ -33,13 +39,11 @@ export default function Page({ activities }: { activities: StravaActivity[] }) {
     setActivityData(processedData);
   }, [activities, selectedYear]);
 
-  const years = [
-    ...new Set(activities.map((a) => new Date(a.start_date).getFullYear())),
-  ];
+  const years = [2019, 2020, 2021, 2022, 2023, 2024];
 
   return (
     <div>
-      <div>
+      <div className="flex gap-4">
         {years.map((year) => (
           <button key={year} onClick={() => setSelectedYear(year)}>
             {year}

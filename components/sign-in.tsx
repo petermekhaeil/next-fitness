@@ -1,6 +1,9 @@
+"use server";
+
+import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/auth";
 
-export default function LoginForm() {
+export default async function SignIn() {
   return (
     <form
       action={async () => {
@@ -8,7 +11,7 @@ export default function LoginForm() {
         await signIn("strava");
       }}
     >
-      <button type="submit">Sign in using Strava</button>
+      <Button type="submit">Sign in using Strava</Button>
     </form>
   );
 }
