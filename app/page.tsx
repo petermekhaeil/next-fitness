@@ -2,14 +2,22 @@ import Activites from "@/components/activities";
 import { Button } from "@/components/ui/button";
 import { auth, signIn } from "@/lib/auth";
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: {
+    year?: string;
+  };
+}) {
   const session = await auth();
+  const year = searchParams?.year || new Date().getFullYear();
+  const yearAsNumber = Number(year);
 
   return (
-    <div className="flex flex-col items-center flex-1 mt-20 mx-4">
+    <div className="flex flex-col flex-1 mt-20 mx-4">
       {session?.user ? (
         <div>
-          <Activites />
+          <Activites year={yearAsNumber} />
         </div>
       ) : (
         <form

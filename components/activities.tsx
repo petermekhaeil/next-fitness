@@ -39,7 +39,7 @@ async function getActivities({
 
       allActivities = allActivities.concat(data);
 
-      console.log("page", page, data.length);
+      console.log("page", year, page, data.length);
       if (data.length < perPage) {
         break; // Exit the loop if we've fetched all available activities
       }
@@ -53,16 +53,15 @@ async function getActivities({
   return allActivities;
 }
 
-export default async function Activites() {
+export default async function Activites({ year }: { year: number }) {
   const session = await auth();
-  const year = 2023;
 
   const accessToken = session!.accessToken;
   const activities = await getActivities({ accessToken, year });
 
   return (
     <div>
-      <HeatMap activities={activities} />
+      <HeatMap activities={activities} year={year} />
     </div>
   );
 }
