@@ -14,20 +14,32 @@ export default async function Page({
   const yearAsNumber = Number(year);
 
   return (
-    <div className="flex flex-col flex-1 mt-20 mx-4">
+    <div className="flex flex-col min-h-screen">
       {session?.user ? (
         <div>
           <Activites year={yearAsNumber} />
         </div>
       ) : (
-        <form
-          action={async () => {
-            "use server";
-            await signIn("strava");
-          }}
-        >
-          <Button type="submit">Sign in using Strava</Button>
-        </form>
+        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+              Next Fitness
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-gray-600">
+              Connect to Strava to see your activities in a calendar heatmap.
+            </p>
+            <div className="mt-10 flex items-center justify-center gap-x-6">
+              <form
+                action={async () => {
+                  "use server";
+                  await signIn("strava");
+                }}
+              >
+                <Button type="submit">Sign in using Strava</Button>
+              </form>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
