@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "next-auth";
 
 interface StravaActivity {
@@ -48,13 +47,6 @@ export default function HeatMap({
     replace(`${pathname}?${params.toString()}`);
   };
 
-  const initials = athlete.name
-    ? athlete.name
-        .split(" ")
-        .map((name) => name[0])
-        .join("")
-    : "";
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4">
@@ -74,15 +66,7 @@ export default function HeatMap({
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>
-            <div className="flex gap-2 items-center">
-              <Avatar>
-                <AvatarImage src={athlete.image ?? ""} />
-                <AvatarFallback>{initials}</AvatarFallback>
-              </Avatar>
-              <div className="text-lg font-semibold">{athlete.name}</div>
-            </div>
-          </CardTitle>
+          <CardTitle>Activities</CardTitle>
           <CardDescription>
             {processedData.length} activities in {selectedYear}
           </CardDescription>
