@@ -6,6 +6,9 @@ interface StravaActivity {
   distance: number;
 }
 
+// Create a cache map to store the fetched activities
+const cache = new Map();
+
 async function getActivities({
   accessToken,
   year,
@@ -13,6 +16,12 @@ async function getActivities({
   accessToken: string;
   year: number;
 }) {
+  // Check if we have a cached version of the activities
+  if (cache.has(year)) {
+    console.log("Cache hit for year", year);
+    return cache.get(year);
+  }
+
   const startDate = new Date(year, 0, 1);
   const endDate = new Date(year + 1, 0, 1);
   const afterTimestamp = Math.floor(startDate.getTime() / 1000);
@@ -39,8 +48,14 @@ async function getActivities({
 
       allActivities = allActivities.concat(data);
 
-      console.log("page", year, page, data.length);
+      console.log("Fetched Page", year, page, data.length);
+
       if (data.length < perPage) {
+        if (!cache.has(year)) {
+          console.log("Setting cache for year", year);
+          cache.set(year, allActivities);
+        }
+
         break; // Exit the loop if we've fetched all available activities
       }
 
@@ -56,12 +71,8 @@ async function getActivities({
 export default async function Activites({ year }: { year: number }) {
   const session = await auth();
 
-  if (!session) {
-    return null;
-  }
-
-  const accessToken = session.accessToken;
-  const athlete = session.user;
+  const accessToken = session!.accessToken;
+  const athlete = session!.user;
   const activities = await getActivities({ accessToken, year });
 
   return <HeatMap activities={activities} year={year} athlete={athlete} />;
