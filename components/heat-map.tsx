@@ -3,7 +3,17 @@
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User } from "next-auth";
 
 interface StravaActivity {
   start_date: string;
@@ -13,9 +23,11 @@ interface StravaActivity {
 export default function HeatMap({
   activities,
   year: selectedYear,
+  athlete,
 }: {
   activities: StravaActivity[];
   year: number;
+  athlete: User & { id: string };
 }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -28,7 +40,7 @@ export default function HeatMap({
     };
   });
 
-  const years = [2019, 2020, 2021, 2022, 2023, 2024];
+  const years = [...Array(4).keys()].map((i) => new Date().getFullYear() - i);
 
   const handleChangeYear = (year: number) => {
     const params = new URLSearchParams(searchParams);
@@ -36,42 +48,70 @@ export default function HeatMap({
     replace(`${pathname}?${params.toString()}`);
   };
 
+  const initials = athlete.name
+    ? athlete.name
+        .split(" ")
+        .map((name) => name[0])
+        .join("")
+    : "";
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4">
-        {years.map((year) => (
-          <button
-            key={year}
-            onClick={() => handleChangeYear(year)}
-            className={cn(
-              "rounded-full px-4 py-2",
-              year === selectedYear
-                ? "bg-orange-500 text-white"
-                : "bg-gray-200 text-gray-800"
-            )}
-          >
-            {year}
-          </button>
-        ))}
+        <Tabs
+          defaultValue={selectedYear + ""}
+          className="flex justify-center w-full"
+          onValueChange={(value) => handleChangeYear(Number(value))}
+        >
+          <TabsList>
+            {years.map((year) => (
+              <TabsTrigger key={year} value={year + ""}>
+                {year}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
-      <CalendarHeatmap
-        startDate={new Date(selectedYear, 0, 1)}
-        endDate={new Date(selectedYear, 11, 31)}
-        values={processedData}
-        classForValue={(value) => {
-          if (!value || value.count === 0) {
-            return "fill-gray-100";
-          }
-          if (value.count <= 1000) {
-            return "fill-orange-200";
-          } else if (value.count <= 5000) {
-            return "fill-orange-400";
-          } else {
-            return "fill-orange-600";
-          }
-        }}
-        showWeekdayLabels={true}
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <div className="flex gap-2 items-center">
+              <Avatar>
+                <AvatarImage src={athlete.image ?? ""} />
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+              <div className="text-lg font-semibold">{athlete.name}</div>
+            </div>
+          </CardTitle>
+          <CardDescription>
+            {processedData.length} activities in {selectedYear}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CalendarHeatmap
+            startDate={new Date(selectedYear, 0, 1)}
+            endDate={new Date(selectedYear, 11, 31)}
+            values={processedData}
+            classForValue={(value) => {
+              if (!value || value.count === 0) {
+                return "fill-gray-100";
+              }
+              if (value.count <= 1000) {
+                return "fill-orange-200";
+              } else if (value.count <= 5000) {
+                return "fill-orange-400";
+              } else {
+                return "fill-orange-600";
+              }
+            }}
+            showWeekdayLabels={true}
+            onMouseOver={(event, value) => {
+              console.log(value);
+            }}
+          />
+        </CardContent>
+        <CardFooter></CardFooter>
+      </Card>
     </div>
   );
 }

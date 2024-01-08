@@ -56,12 +56,10 @@ async function getActivities({
 export default async function Activites({ year }: { year: number }) {
   const session = await auth();
 
+  console.log({ session });
   const accessToken = session!.accessToken;
+  const athlete = session!.user;
   const activities = await getActivities({ accessToken, year });
 
-  return (
-    <div>
-      <HeatMap activities={activities} year={year} />
-    </div>
-  );
+  return <HeatMap activities={activities} year={year} athlete={athlete} />;
 }

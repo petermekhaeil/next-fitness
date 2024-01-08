@@ -16,7 +16,7 @@ export default async function Page({
   return (
     <div className="flex flex-col min-h-screen">
       {session?.user ? (
-        <div>
+        <div className="mx-auto max-w-4xl w-full py-32 sm:py-48 lg:py-56 px-4">
           <Activites year={yearAsNumber} />
         </div>
       ) : (
