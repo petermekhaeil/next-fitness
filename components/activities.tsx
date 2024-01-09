@@ -76,8 +76,7 @@ export default async function Activites({ year }: { year: number }) {
   const session = await auth();
 
   const accessToken = session!.accessToken;
-  const athlete = session!.user;
   const activities = await getActivities({ accessToken, year });
 
-  return <HeatMap activities={activities} year={year} athlete={athlete} />;
+  return <HeatMap activities={activities} year={year} />;
 }
