@@ -9,6 +9,10 @@ interface StravaActivity {
 // Create a cache map to store the fetched activities
 const cache = new Map();
 
+const cachableYear = (year: number) => {
+  return year !== new Date().getFullYear();
+};
+
 async function getActivities({
   accessToken,
   year,
@@ -17,7 +21,7 @@ async function getActivities({
   year: number;
 }) {
   // Check if we have a cached version of the activities
-  if (cache.has(year)) {
+  if (cachableYear(year) && cache.has(year)) {
     console.log("Cache hit for year", year);
     return cache.get(year);
   }
@@ -35,7 +39,7 @@ async function getActivities({
     while (true) {
       const url = `https://www.strava.com/api/v3/activities?after=${afterTimestamp}&before=${beforeTimestamp}&per_page=${perPage}&page=${page}`;
       const response = await fetch(url, {
-        cache: "force-cache",
+        cache: cachableYear(year) ? "force-cache" : "no-cache",
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -51,7 +55,7 @@ async function getActivities({
       console.log("Fetched Page", year, page, data.length);
 
       if (data.length < perPage) {
-        if (!cache.has(year)) {
+        if (cachableYear(year) && !cache.has(year)) {
           console.log("Setting cache for year", year);
           cache.set(year, allActivities);
         }
