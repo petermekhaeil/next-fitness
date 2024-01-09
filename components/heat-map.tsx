@@ -2,7 +2,6 @@
 
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import CalendarHeatmap from "react-calendar-heatmap";
-import "react-calendar-heatmap/dist/styles.css";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -78,14 +77,19 @@ export default function HeatMap({
             values={processedData}
             classForValue={(value) => {
               if (!value || value.count === 0) {
-                return "fill-gray-100";
+                return "fill-[hsl(var(--accent))]";
               }
-              if (value.count <= 1000) {
+
+              if (value.count < 1000) {
+                return "fill-orange-100";
+              } else if (value.count < 2000) {
                 return "fill-orange-200";
-              } else if (value.count <= 5000) {
+              } else if (value.count < 3000) {
+                return "fill-orange-300";
+              } else if (value.count < 4000) {
                 return "fill-orange-400";
               } else {
-                return "fill-orange-600";
+                return "fill-orange-500";
               }
             }}
             showWeekdayLabels={true}

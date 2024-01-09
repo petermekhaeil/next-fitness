@@ -57,3 +57,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.react-calendar-heatmap text {
+  @apply fill-muted-foreground text-[10px];
+}
