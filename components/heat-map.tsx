@@ -19,6 +19,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 
 interface StravaActivity {
   start_date: string;
@@ -176,6 +184,29 @@ function analyzeActivities(activities: StravaActivity[]) {
   };
 }
 
+function getCumulativeDistancePerMonth(activities: StravaActivity[]) {
+  let monthlyDistances: Record<number, number> = {};
+
+  activities.forEach((activity) => {
+    let month = new Date(activity.start_date).getMonth(); // 0 indexed
+    monthlyDistances[month] =
+      (monthlyDistances[month] || 0) + activity.distance / 1000; // Convert meters to kilometers
+  });
+
+  let cumulativeDistance = 0;
+  let cumulativeDistancesPerMonth = [];
+
+  for (let month = 0; month < 12; month++) {
+    cumulativeDistance += monthlyDistances[month] || 0;
+    cumulativeDistancesPerMonth.push({
+      month: month,
+      distance: cumulativeDistance,
+    });
+  }
+
+  return cumulativeDistancesPerMonth;
+}
+
 export default function HeatMap({
   activities,
   year: selectedYear,
@@ -284,6 +315,67 @@ export default function HeatMap({
             <p className="text-xs text-muted-foreground">
               {results.totalActivities} activities
             </p>
+            <div className="h-[80px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={getCumulativeDistancePerMonth(activities)}
+                  margin={{
+                    top: 5,
+                    right: 10,
+                    left: 10,
+                    bottom: 0,
+                  }}
+                >
+                  <Line
+                    type="monotone"
+                    strokeWidth={2}
+                    dataKey="distance"
+                    activeDot={{
+                      r: 6,
+                      style: { fill: "hsl(var(--primary))", opacity: 0.25 },
+                    }}
+                    style={{
+                      stroke: "hsl(var(--primary))",
+                    }}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const month = new Date(
+                          new Date().getFullYear(),
+                          payload[0].payload.month,
+                          1
+                        ).toLocaleString("default", { month: "short" });
+                        const distance = payload[0].payload.distance.toFixed(1);
+
+                        return (
+                          <div className="rounded-lg border bg-background p-2 shadow-sm">
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Month
+                                </span>
+                                <span className="font-bold text-muted-foreground">
+                                  {month}
+                                </span>
+                              </div>
+                              <div className="flex flex-col col-span-2">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Cumulative Distance
+                                </span>
+                                <span className="font-bold">{distance} km</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return null;
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
         <Card>
