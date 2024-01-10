@@ -81,26 +81,26 @@ function classForValue(value: { count: number }, type: HeatMapValue) {
     case "elapsed_time":
     case "moving_time":
       // Assuming time is in seconds
-      if (value.count < 900) return "fill-orange-100";
-      if (value.count < 1800) return "fill-orange-200";
-      if (value.count < 3600) return "fill-orange-300";
-      if (value.count < 5400) return "fill-orange-400";
-      return "fill-orange-500";
+      if (value.count < 1800) return "fill-orange-100"; // less than 30 minutes
+      if (value.count < 3600) return "fill-orange-200"; // 30 mins to 1 hour
+      if (value.count < 7200) return "fill-orange-300"; // 1 to 2 hours
+      if (value.count < 14400) return "fill-orange-400"; // 2 to 4 hours
+      return "fill-orange-500"; // more than 4 hours
 
     case "average_speed":
       // Assuming speed is in m/s
-      if (value.count < 1) return "fill-orange-100";
-      if (value.count < 2.5) return "fill-orange-200";
-      if (value.count < 5) return "fill-orange-300";
-      if (value.count < 7.5) return "fill-orange-400";
-      return "fill-orange-500";
+      if (value.count < 1.4) return "fill-orange-100"; // Walking
+      if (value.count < 2.2) return "fill-orange-200"; // Jogging
+      if (value.count < 3.5) return "fill-orange-300"; // Running
+      if (value.count < 5.5) return "fill-orange-400"; // Fast Running
+      return "fill-orange-500"; // Sprinting
 
     case "average_heartrate":
-      if (value.count < 50) return "fill-orange-100";
-      if (value.count < 100) return "fill-orange-200";
-      if (value.count < 120) return "fill-orange-300";
-      if (value.count < 140) return "fill-orange-400";
-      return "fill-orange-500";
+      if (value.count < 60) return "fill-orange-100"; // Resting
+      if (value.count < 90) return "fill-orange-200"; // Light Activity
+      if (value.count < 120) return "fill-orange-300"; // Moderate Exercise
+      if (value.count < 150) return "fill-orange-400"; // Intense Exercise
+      return "fill-orange-500"; // Max Effort
 
     default:
       return "fill-gray-300";
@@ -174,7 +174,7 @@ export default function HeatMap({
             {processedData.length} activities in {selectedYear}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pb-0">
           <CalendarHeatmap
             startDate={new Date(selectedYear, 0, 1)}
             endDate={new Date(selectedYear, 11, 31)}
@@ -188,7 +188,17 @@ export default function HeatMap({
             }}
           />
         </CardContent>
-        <CardFooter></CardFooter>
+        <CardFooter className="flex justify-end">
+          <div className="flex items-center">
+            <span className="mr-1 text-sm text-muted-foreground">Less</span>
+            <div className="w-2.5 h-2.5 bg-gray-100 rounded mr-1"></div>
+            <div className="w-2.5 h-2.5 bg-orange-200 rounded mr-1"></div>
+            <div className="w-2.5 h-2.5 bg-orange-300 rounded mr-1"></div>
+            <div className="w-2.5 h-2.5 bg-orange-400 rounded mr-1"></div>
+            <div className="w-2.5 h-2.5 bg-orange-500 rounded mr-1"></div>
+            <span className="text-sm text-muted-foreground">More</span>
+          </div>
+        </CardFooter>
       </Card>
     </div>
   );
