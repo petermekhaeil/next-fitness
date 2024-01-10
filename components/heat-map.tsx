@@ -27,6 +27,8 @@ interface StravaActivity {
   moving_time: number;
   average_speed: number;
   average_heartrate: number;
+  type: string;
+  name: string;
 }
 
 type HeatMapValue =
@@ -107,6 +109,73 @@ function classForValue(value: { count: number }, type: HeatMapValue) {
   }
 }
 
+function analyzeActivities(activities: StravaActivity[]) {
+  let totalActivities = activities.length;
+  let totalDistance = 0;
+  let monthlyDistances: Record<number | string, number> = {};
+  let longestRun = { name: "", distance: 0, date: "" };
+  let bestRun = { name: "", speed: 0 };
+
+  activities.forEach((activity) => {
+    // Sum up the total distance
+    totalDistance += activity.distance / 1000; // Convert meters to kilometers
+
+    const month = new Date(activity.start_date).getMonth() + 1;
+
+    monthlyDistances[month] =
+      (monthlyDistances[month] || 0) + activity.distance / 1000;
+
+    // Check for longest run
+    if (activity.type === "Run" && activity.distance > longestRun.distance) {
+      longestRun = {
+        name: activity.name,
+        distance: activity.distance / 1000,
+        date: activity.start_date,
+      };
+    }
+
+    // Check for best run (highest average speed)
+    let averageSpeed = activity.distance / 1000 / (activity.moving_time / 3600); // km/h
+    if (activity.type === "Run" && averageSpeed > bestRun.speed) {
+      bestRun = {
+        name: activity.name,
+        speed: averageSpeed,
+      };
+    }
+  });
+
+  const bestMonth = Object.keys(monthlyDistances).reduce((a, b) =>
+    monthlyDistances[a] > monthlyDistances[b] ? a : b
+  );
+
+  const bestMonthName = new Date(
+    new Date().getFullYear(),
+    Number(bestMonth) - 1,
+    1
+  ).toLocaleString("default", { month: "long" });
+
+  return {
+    totalActivities,
+    totalDistance: totalDistance.toFixed(1),
+    bestMonth: bestMonthName,
+    bestMonthDistance: monthlyDistances[bestMonth].toFixed(1),
+    longestRun: {
+      name: longestRun.name,
+      distance: longestRun.distance.toFixed(1),
+      date:
+        new Date(longestRun.date).toLocaleString("default", {
+          month: "long",
+        }) +
+        " " +
+        new Date(longestRun.date).getDate(),
+    },
+    bestRun: {
+      name: bestRun.name,
+      speed: bestRun.speed.toFixed(2),
+    },
+  };
+}
+
 export default function HeatMap({
   activities,
   year: selectedYear,
@@ -137,6 +206,9 @@ export default function HeatMap({
   const handleValueChange = (value: HeatMapValue) => {
     setHeatmapValue(value);
   };
+
+  let results = analyzeActivities(activities);
+  console.log(results);
 
   return (
     <div className="flex flex-col gap-4">
@@ -200,6 +272,45 @@ export default function HeatMap({
           </div>
         </CardFooter>
       </Card>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Distance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{results.totalDistance} km</div>
+            <p className="text-xs text-muted-foreground">
+              {results.totalActivities} activities
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Longest Run</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {results.longestRun.distance} km
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {results.longestRun.name} on {results.longestRun.date}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Best Month</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{results.bestMonth}</div>
+            <p className="text-xs text-muted-foreground">
+              Total distance of {results.bestMonthDistance} km
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
