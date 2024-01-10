@@ -263,11 +263,11 @@ export default function HeatMap({
         <CardFooter className="flex justify-end">
           <div className="flex items-center">
             <span className="mr-1 text-sm text-muted-foreground">Less</span>
-            <div className="w-2.5 h-2.5 bg-gray-100 rounded mr-1"></div>
-            <div className="w-2.5 h-2.5 bg-orange-200 rounded mr-1"></div>
-            <div className="w-2.5 h-2.5 bg-orange-300 rounded mr-1"></div>
-            <div className="w-2.5 h-2.5 bg-orange-400 rounded mr-1"></div>
-            <div className="w-2.5 h-2.5 bg-orange-500 rounded mr-1"></div>
+            <div className="w-2.5 h-2.5 bg-gray-100 mr-1"></div>
+            <div className="w-2.5 h-2.5 bg-orange-200 mr-1"></div>
+            <div className="w-2.5 h-2.5 bg-orange-300 mr-1"></div>
+            <div className="w-2.5 h-2.5 bg-orange-400 mr-1"></div>
+            <div className="w-2.5 h-2.5 bg-orange-500 mr-1"></div>
             <span className="text-sm text-muted-foreground">More</span>
           </div>
         </CardFooter>
