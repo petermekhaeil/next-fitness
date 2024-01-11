@@ -19,16 +19,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { Line, LineChart, ResponsiveContainer, Tooltip } from "recharts";
 
 interface StravaActivity {
+  id: number;
   start_date: string;
   distance: number;
   elapsed_time: number;
@@ -121,8 +115,7 @@ function analyzeActivities(activities: StravaActivity[]) {
   let totalActivities = activities.length;
   let totalDistance = 0;
   let monthlyDistances: Record<number | string, number> = {};
-  let longestRun = { name: "", distance: 0, date: "" };
-  let bestRun = { name: "", speed: 0 };
+  let longestRun = { id: 0, name: "", distance: 0, date: "" };
 
   activities.forEach((activity) => {
     // Sum up the total distance
@@ -134,20 +127,12 @@ function analyzeActivities(activities: StravaActivity[]) {
       (monthlyDistances[month] || 0) + activity.distance / 1000;
 
     // Check for longest run
-    if (activity.type === "Run" && activity.distance > longestRun.distance) {
+    if (activity.distance > longestRun.distance) {
       longestRun = {
+        id: activity.id,
         name: activity.name,
-        distance: activity.distance / 1000,
+        distance: activity.distance,
         date: activity.start_date,
-      };
-    }
-
-    // Check for best run (highest average speed)
-    let averageSpeed = activity.distance / 1000 / (activity.moving_time / 3600); // km/h
-    if (activity.type === "Run" && averageSpeed > bestRun.speed) {
-      bestRun = {
-        name: activity.name,
-        speed: averageSpeed,
       };
     }
   });
@@ -168,18 +153,15 @@ function analyzeActivities(activities: StravaActivity[]) {
     bestMonth: bestMonthName,
     bestMonthDistance: monthlyDistances[bestMonth].toFixed(1),
     longestRun: {
+      id: longestRun.id,
       name: longestRun.name,
-      distance: longestRun.distance.toFixed(1),
+      distance: (longestRun.distance / 1000).toFixed(1),
       date:
         new Date(longestRun.date).toLocaleString("default", {
           month: "long",
         }) +
         " " +
         new Date(longestRun.date).getDate(),
-    },
-    bestRun: {
-      name: bestRun.name,
-      speed: bestRun.speed.toFixed(2),
     },
   };
 }
@@ -387,7 +369,15 @@ export default function HeatMap({
               {results.longestRun.distance} km
             </div>
             <p className="text-xs text-muted-foreground">
-              {results.longestRun.name} on {results.longestRun.date}
+              <a
+                className="font-medium underline underline-offset-4"
+                href={`https://www.strava.com/activities/${results.longestRun.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {results.longestRun.name}
+              </a>{" "}
+              on {results.longestRun.date}
             </p>
           </CardContent>
         </Card>
