@@ -1,7 +1,14 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Line, LineChart, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  Bar,
+  BarChart,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 
 interface StravaActivity {
   id: number;
@@ -54,7 +61,8 @@ function analyzeActivities(activities: StravaActivity[]) {
   return {
     totalActivities,
     totalDistance: totalDistance.toFixed(1),
-    bestMonth: bestMonthName,
+    bestMonth: Number(bestMonth),
+    bestMonthName,
     bestMonthDistance: monthlyDistances[bestMonth].toFixed(1),
     longestRun: {
       id: longestRun.id,
@@ -93,13 +101,56 @@ function getCumulativeDistancePerMonth(activities: StravaActivity[]) {
   return cumulativeDistancesPerMonth;
 }
 
+function getDailyDistancesForBestMonth(
+  activities: StravaActivity[],
+  bestMonth: number
+) {
+  let dailyDistances: Record<number, number> = {};
+
+  // Determine the year from the latest activity in the list
+  let latestActivityDate = new Date(
+    activities[activities.length - 1].start_date
+  );
+  let year = latestActivityDate.getFullYear();
+
+  // Filter activities for the best month and sum distances for each day
+  activities.forEach((activity) => {
+    let date = new Date(activity.start_date);
+    if (date.getFullYear() === year && date.getMonth() === bestMonth - 1) {
+      // Months are 0 indexed in JavaScript
+      let day = date.getDate();
+      dailyDistances[day] =
+        (dailyDistances[day] || 0) + activity.distance / 1000; // Convert meters to kilometers
+    }
+  });
+
+  let daysInMonth = new Date(year, bestMonth, 0).getDate();
+  let distancesPerDay = [];
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    distancesPerDay.push({
+      day: day,
+      distance: dailyDistances[day] || 0,
+    });
+  }
+
+  return distancesPerDay;
+}
+
 export default function Stats({
   activities,
 }: {
   activities: StravaActivity[];
 }) {
   let results = analyzeActivities(activities);
+
+  const bestMonthData = getDailyDistancesForBestMonth(
+    activities,
+    results.bestMonth
+  );
+
   console.log(results);
+  console.log(bestMonthData);
 
   return (
     <div className="grid gap-3 sm:grid-cols-3">
@@ -201,10 +252,54 @@ export default function Stats({
           <CardTitle className="text-sm font-medium">Best Month</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{results.bestMonth}</div>
+          <div className="text-2xl font-bold">{results.bestMonthName}</div>
           <p className="text-xs text-muted-foreground">
             Total distance of {results.bestMonthDistance} km
           </p>
+          <div className="mt-4 h-[80px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={bestMonthData}>
+                <Bar
+                  dataKey="distance"
+                  style={{
+                    fill: "hsl(var(--primary))",
+                    opacity: 1,
+                  }}
+                />
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const day = payload[0].payload.day;
+                      const distance = payload[0].payload.distance.toFixed(1);
+
+                      return (
+                        <div className="rounded-lg border bg-background p-2 shadow-sm">
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="flex flex-col">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Day
+                              </span>
+                              <span className="font-bold text-muted-foreground">
+                                {day}
+                              </span>
+                            </div>
+                            <div className="flex flex-col col-span-2">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Distance
+                              </span>
+                              <span className="font-bold">{distance} km</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </CardContent>
       </Card>
     </div>
