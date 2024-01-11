@@ -196,9 +196,6 @@ export default function HeatMap({
   activities: StravaActivity[];
   year: number;
 }) {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const { replace } = useRouter();
   const [heatmapValue, setHeatmapValue] = useState<HeatMapValue>("distance");
   const [processedData, setProcessedData] = useState<HeatMapData[]>(
     mapActivitiesToCount(activities, heatmapValue)
@@ -208,191 +205,42 @@ export default function HeatMap({
     setProcessedData(mapActivitiesToCount(activities, heatmapValue));
   }, [activities, heatmapValue]);
 
-  const years = [...Array(4).keys()].map((i) => new Date().getFullYear() - i);
-
-  const handleChangeYear = (year: number) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("year", String(year));
-    replace(`${pathname}?${params.toString()}`);
-  };
-
-  const handleValueChange = (value: HeatMapValue) => {
-    setHeatmapValue(value);
-  };
-
   let results = analyzeActivities(activities);
   console.log(results);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-4">
-        <Tabs
-          defaultValue={selectedYear + ""}
-          className="flex w-full"
-          onValueChange={(value) => handleChangeYear(Number(value))}
-        >
-          <TabsList>
-            {years.map((year) => (
-              <TabsTrigger key={year} value={year + ""}>
-                {year}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        <Select defaultValue={heatmapValue} onValueChange={handleValueChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Value" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="distance">Distance</SelectItem>
-            <SelectItem value="elapsed_time">Elapsed Time</SelectItem>
-            <SelectItem value="moving_time">Moving Time</SelectItem>
-            <SelectItem value="average_speed">Avg Speed</SelectItem>
-            <SelectItem value="average_heartrate">Avg Heart Rate</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Activities</CardTitle>
-          <CardDescription>
-            {processedData.length} activities in {selectedYear}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pb-0">
-          <CalendarHeatmap
-            startDate={new Date(selectedYear, 0, 1)}
-            endDate={new Date(selectedYear, 11, 31)}
-            values={processedData}
-            classForValue={(value) => {
-              return classForValue(value, heatmapValue);
-            }}
-            showWeekdayLabels={true}
-            onMouseOver={(event, value) => {
-              console.log(value);
-            }}
-          />
-        </CardContent>
-        <CardFooter className="flex justify-end">
-          <div className="flex items-center">
-            <span className="mr-1 text-sm text-muted-foreground">Less</span>
-            <div className="w-2.5 h-2.5 bg-gray-100 mr-1"></div>
-            <div className="w-2.5 h-2.5 bg-orange-200 mr-1"></div>
-            <div className="w-2.5 h-2.5 bg-orange-300 mr-1"></div>
-            <div className="w-2.5 h-2.5 bg-orange-400 mr-1"></div>
-            <div className="w-2.5 h-2.5 bg-orange-500 mr-1"></div>
-            <span className="text-sm text-muted-foreground">More</span>
-          </div>
-        </CardFooter>
-      </Card>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Distance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{results.totalDistance} km</div>
-            <p className="text-xs text-muted-foreground">
-              {results.totalActivities} activities
-            </p>
-            <div className="h-[80px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={getCumulativeDistancePerMonth(activities)}
-                  margin={{
-                    top: 5,
-                    right: 10,
-                    left: 10,
-                    bottom: 0,
-                  }}
-                >
-                  <Line
-                    type="monotone"
-                    strokeWidth={2}
-                    dataKey="distance"
-                    activeDot={{
-                      r: 6,
-                      style: { fill: "hsl(var(--primary))", opacity: 0.25 },
-                    }}
-                    style={{
-                      stroke: "hsl(var(--primary))",
-                    }}
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const month = new Date(
-                          new Date().getFullYear(),
-                          payload[0].payload.month,
-                          1
-                        ).toLocaleString("default", { month: "short" });
-                        const distance = payload[0].payload.distance.toFixed(1);
-
-                        return (
-                          <div className="rounded-lg border bg-background p-2 shadow-sm">
-                            <div className="grid grid-cols-3 gap-2">
-                              <div className="flex flex-col">
-                                <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                  Month
-                                </span>
-                                <span className="font-bold text-muted-foreground">
-                                  {month}
-                                </span>
-                              </div>
-                              <div className="flex flex-col col-span-2">
-                                <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                  Cumulative Distance
-                                </span>
-                                <span className="font-bold">{distance} km</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      }
-
-                      return null;
-                    }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Longest Run</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {results.longestRun.distance} km
-            </div>
-            <p className="text-xs text-muted-foreground">
-              <a
-                className="font-medium underline underline-offset-4"
-                href={`https://www.strava.com/activities/${results.longestRun.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {results.longestRun.name}
-              </a>{" "}
-              on {results.longestRun.date}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Best Month</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{results.bestMonth}</div>
-            <p className="text-xs text-muted-foreground">
-              Total distance of {results.bestMonthDistance} km
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Activities</CardTitle>
+        <CardDescription>
+          {processedData.length} activities in {selectedYear}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pb-0">
+        <CalendarHeatmap
+          startDate={new Date(selectedYear, 0, 1)}
+          endDate={new Date(selectedYear, 11, 31)}
+          values={processedData}
+          classForValue={(value) => {
+            return classForValue(value, heatmapValue);
+          }}
+          showWeekdayLabels={true}
+          onMouseOver={(event, value) => {
+            console.log(value);
+          }}
+        />
+      </CardContent>
+      <CardFooter className="flex justify-end">
+        <div className="flex items-center">
+          <span className="mr-1 text-sm text-muted-foreground">Less</span>
+          <div className="w-2.5 h-2.5 bg-gray-100 mr-1"></div>
+          <div className="w-2.5 h-2.5 bg-orange-200 mr-1"></div>
+          <div className="w-2.5 h-2.5 bg-orange-300 mr-1"></div>
+          <div className="w-2.5 h-2.5 bg-orange-400 mr-1"></div>
+          <div className="w-2.5 h-2.5 bg-orange-500 mr-1"></div>
+          <span className="text-sm text-muted-foreground">More</span>
+        </div>
+      </CardFooter>
+    </Card>
   );
 }

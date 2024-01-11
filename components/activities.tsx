@@ -1,5 +1,7 @@
 import HeatMap from "@/components/heat-map";
 import { auth } from "@/lib/auth";
+import Years from "@/components/years";
+import Stats from "@/components/stats";
 
 interface StravaActivity {
   start_date: string;
@@ -78,5 +80,13 @@ export default async function Activites({ year }: { year: number }) {
   const accessToken = session!.accessToken;
   const activities = await getActivities({ accessToken, year });
 
-  return <HeatMap activities={activities} year={year} />;
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-4">
+        <Years selectedYear={year} />
+      </div>
+      <HeatMap activities={activities} year={year} />
+      <Stats activities={activities} />
+    </div>
+  );
 }
