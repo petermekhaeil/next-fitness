@@ -149,9 +149,6 @@ export default function Stats({
     results.bestMonth
   );
 
-  console.log(results);
-  console.log(bestMonthData);
-
   return (
     <div className="grid gap-3 sm:grid-cols-3">
       <Card>
@@ -228,27 +225,6 @@ export default function Stats({
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Longest Run</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {results.longestRun.distance} km
-          </div>
-          <p className="text-xs text-muted-foreground">
-            <a
-              className="font-medium underline underline-offset-4"
-              href={`https://www.strava.com/activities/${results.longestRun.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {results.longestRun.name}
-            </a>{" "}
-            on {results.longestRun.date}
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Best Month</CardTitle>
         </CardHeader>
         <CardContent>
@@ -300,6 +276,27 @@ export default function Stats({
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Longest Run</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {results.longestRun.distance} km
+          </div>
+          <p className="text-xs text-muted-foreground">
+            <a
+              className="font-medium underline underline-offset-4"
+              href={`https://www.strava.com/activities/${results.longestRun.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {results.longestRun.name}
+            </a>{" "}
+            on {results.longestRun.date}
+          </p>
         </CardContent>
       </Card>
     </div>
