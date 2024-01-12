@@ -2,6 +2,12 @@ import Activites from "@/components/activities";
 import { Button } from "@/components/ui/button";
 import { auth, signIn } from "@/lib/auth";
 
+function getDefaultYear() {
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  return currentMonth === 0 ? currentYear - 1 : currentYear;
+}
+
 export default async function Page({
   searchParams,
 }: {
@@ -10,7 +16,7 @@ export default async function Page({
   };
 }) {
   const session = await auth();
-  const year = searchParams?.year || new Date().getFullYear();
+  const year = searchParams?.year || getDefaultYear();
   const yearAsNumber = Number(year);
 
   return (
