@@ -168,8 +168,6 @@ export default function Stats({
     Number(a.percentage) > Number(b.percentage) ? a : b
   );
 
-  console.log({ weeklyPercentage });
-
   return (
     <div className="grid gap-3 sm:grid-cols-3">
       <Card>
@@ -321,7 +319,37 @@ export default function Stats({
                     opacity: 1,
                   }}
                 />
-                <Tooltip />
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const day = payload[0].payload.day;
+                      const distance = payload[0].payload.distance.toFixed(1);
+
+                      return (
+                        <div className="rounded-lg border bg-background p-2 shadow-sm">
+                          <div className="grid grid-cols-4 gap-2">
+                            <div className="flex flex-col col-span-2">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Day
+                              </span>
+                              <span className="font-bold text-muted-foreground">
+                                {day}
+                              </span>
+                            </div>
+                            <div className="flex flex-col col-span-2">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Distance
+                              </span>
+                              <span className="font-bold">{distance} km</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>

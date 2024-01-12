@@ -87,6 +87,7 @@ async function getActivities({
     }
   } catch (error) {
     console.error("Error fetching activities:", error);
+    if (error instanceof Error) throw new Error(error.message);
   }
 
   return allActivities;
