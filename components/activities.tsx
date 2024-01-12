@@ -2,29 +2,8 @@ import HeatMap from "@/components/heat-map";
 import { auth } from "@/lib/auth";
 import Years from "@/components/years";
 import Stats from "@/components/stats";
-
-interface StravaActivity {
-  id: number;
-  start_date: string;
-  distance: number;
-  elapsed_time: number;
-  moving_time: number;
-  average_speed: number;
-  average_heartrate: number;
-  type: string;
-  name: string;
-  splits_metric: [
-    {
-      distance: number;
-      elapsed_time: number;
-      elevation_difference: number;
-      moving_time: number;
-      split: number;
-      average_speed: number;
-      pace_zone: number;
-    }
-  ];
-}
+import LongestRunStats from "./longest-run-stats";
+import { StravaActivity } from "@/lib/strava";
 
 // Create a cache map to store the fetched activities
 const cache = new Map();
@@ -93,34 +72,12 @@ async function getActivities({
   return allActivities;
 }
 
-async function getActivity({
-  accessToken,
-  id,
-}: {
-  accessToken: string;
-  id: number;
-}) {
-  const url = `https://www.strava.com/api/v3/activities/${id}`;
-  const response = await fetch(url, {
-    cache: "force-cache",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message);
-  }
-
-  return data as StravaActivity;
-}
-
 function getSummaryFromActivities(activities: StravaActivity[]) {
   let totalActivities = activities.length;
   let totalDistance = 0;
   let monthlyDistances: Record<number | string, number> = {};
-  let longestRun = { id: 0, name: "", distance: 0, date: "" };
+
+  let longestRun = activities[0];
 
   activities.forEach((activity) => {
     // Sum up the total distance
@@ -133,12 +90,7 @@ function getSummaryFromActivities(activities: StravaActivity[]) {
 
     // Check for longest run
     if (activity.distance > longestRun.distance) {
-      longestRun = {
-        id: activity.id,
-        name: activity.name,
-        distance: activity.distance,
-        date: activity.start_date,
-      };
+      longestRun = activity;
     }
   });
 
@@ -158,43 +110,8 @@ function getSummaryFromActivities(activities: StravaActivity[]) {
     bestMonth: Number(bestMonth),
     bestMonthName,
     bestMonthDistance: monthlyDistances[bestMonth].toFixed(1),
-    longestRun: {
-      id: longestRun.id,
-      name: longestRun.name,
-      distance: (longestRun.distance / 1000).toFixed(1),
-      date:
-        new Date(longestRun.date).toLocaleString("default", {
-          month: "long",
-        }) +
-        " " +
-        new Date(longestRun.date).getDate(),
-    },
+    longestRun,
   };
-}
-
-function getSplitsDataForChart(activity: StravaActivity) {
-  // Check if the response and splits_metric data exist
-  if (!activity || !activity.splits_metric) {
-    return [];
-  }
-
-  // Extract the splits_metric data
-  const splits = activity.splits_metric;
-
-  // Prepare the data for the chart
-  const chartData = splits.map((split) => {
-    return {
-      splitNumber: split.split,
-      distance: split.distance,
-      elapsedTime: split.elapsed_time,
-      movingTime: split.moving_time,
-      elevationDifference: split.elevation_difference,
-      averageSpeed: split.average_speed,
-      paceZone: split.pace_zone,
-    };
-  });
-
-  return chartData;
 }
 
 export default async function Activites({ year }: { year: number }) {
@@ -204,8 +121,6 @@ export default async function Activites({ year }: { year: number }) {
   const activities = await getActivities({ accessToken, year });
   const summary = getSummaryFromActivities(activities);
   const longestRun = summary.longestRun;
-  const longestRunStats = await getActivity({ accessToken, id: longestRun.id });
-  const splitsData = getSplitsDataForChart(longestRunStats);
 
   return (
     <div className="flex flex-col gap-4">
@@ -214,6 +129,7 @@ export default async function Activites({ year }: { year: number }) {
       </div>
       <HeatMap activities={activities} year={year} />
       <Stats activities={activities} />
+      <LongestRunStats activity={longestRun} />
     </div>
   );
 }

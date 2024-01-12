@@ -304,7 +304,7 @@ export default function Stats({
         <CardContent>
           <div className="text-2xl font-bold">{bestWeekday.day}</div>
           <p className="text-xs text-muted-foreground">
-            {bestWeekday.distance.toFixed(2)} km
+            Total distance of {bestWeekday.distance.toFixed(2)} km
           </p>
           <div className="mt-4 h-[120px]">
             <ResponsiveContainer width="100%" height="100%">
