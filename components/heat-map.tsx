@@ -205,9 +205,6 @@ export default function HeatMap({
     setProcessedData(mapActivitiesToCount(activities, heatmapValue));
   }, [activities, heatmapValue]);
 
-  let results = analyzeActivities(activities);
-  console.log(results);
-
   return (
     <Card>
       <CardHeader>
