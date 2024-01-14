@@ -32,7 +32,7 @@ async function getActivities({
 
   let allActivities: StravaActivity[] = [];
   let page = 1;
-  const perPage = 100;
+  const perPage = 200;
 
   try {
     while (true) {
