@@ -1,8 +1,6 @@
 "use client";
 
-import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import CalendarHeatmap from "react-calendar-heatmap";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
   CardContent,
@@ -11,15 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useEffect, useState } from "react";
-import { Line, LineChart, ResponsiveContainer, Tooltip } from "recharts";
 
 interface StravaActivity {
   id: number;
@@ -109,84 +99,6 @@ function classForValue(value: { count: number }, type: HeatMapValue) {
     default:
       return "fill-gray-300";
   }
-}
-
-function analyzeActivities(activities: StravaActivity[]) {
-  let totalActivities = activities.length;
-  let totalDistance = 0;
-  let monthlyDistances: Record<number | string, number> = {};
-  let longestRun = { id: 0, name: "", distance: 0, date: "" };
-
-  activities.forEach((activity) => {
-    // Sum up the total distance
-    totalDistance += activity.distance / 1000; // Convert meters to kilometers
-
-    const month = new Date(activity.start_date).getMonth() + 1;
-
-    monthlyDistances[month] =
-      (monthlyDistances[month] || 0) + activity.distance / 1000;
-
-    // Check for longest run
-    if (activity.distance > longestRun.distance) {
-      longestRun = {
-        id: activity.id,
-        name: activity.name,
-        distance: activity.distance,
-        date: activity.start_date,
-      };
-    }
-  });
-
-  const bestMonth = Object.keys(monthlyDistances).reduce((a, b) =>
-    monthlyDistances[a] > monthlyDistances[b] ? a : b
-  );
-
-  const bestMonthName = new Date(
-    new Date().getFullYear(),
-    Number(bestMonth) - 1,
-    1
-  ).toLocaleString("default", { month: "long" });
-
-  return {
-    totalActivities,
-    totalDistance: totalDistance.toFixed(1),
-    bestMonth: bestMonthName,
-    bestMonthDistance: monthlyDistances[bestMonth].toFixed(1),
-    longestRun: {
-      id: longestRun.id,
-      name: longestRun.name,
-      distance: (longestRun.distance / 1000).toFixed(1),
-      date:
-        new Date(longestRun.date).toLocaleString("default", {
-          month: "long",
-        }) +
-        " " +
-        new Date(longestRun.date).getDate(),
-    },
-  };
-}
-
-function getCumulativeDistancePerMonth(activities: StravaActivity[]) {
-  let monthlyDistances: Record<number, number> = {};
-
-  activities.forEach((activity) => {
-    let month = new Date(activity.start_date).getMonth(); // 0 indexed
-    monthlyDistances[month] =
-      (monthlyDistances[month] || 0) + activity.distance / 1000; // Convert meters to kilometers
-  });
-
-  let cumulativeDistance = 0;
-  let cumulativeDistancesPerMonth = [];
-
-  for (let month = 0; month < 12; month++) {
-    cumulativeDistance += monthlyDistances[month] || 0;
-    cumulativeDistancesPerMonth.push({
-      month: month,
-      distance: cumulativeDistance,
-    });
-  }
-
-  return cumulativeDistancesPerMonth;
 }
 
 export default function HeatMap({
