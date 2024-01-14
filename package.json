@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -16,7 +16,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "lucide-react": "^0.303.0",
-    "next": "14.0.4",
+    "next": "^14.0.5-canary.56",
     "next-auth": "^5.0.0-beta.4",
     "react": "^18",
     "react-calendar-heatmap": "^1.9.0",
